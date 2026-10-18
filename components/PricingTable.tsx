@@ -43,6 +43,7 @@ export function PricingTable({ config, dark = false }: { config: PricingConfig; 
           return (
             <div
               key={plan.id}
+              data-plan={plan.id}
               className={`relative flex flex-col rounded-2xl p-7 ${
                 featured
                   ? "bg-navy-900 text-white ring-1 ring-navy-900"
@@ -55,12 +56,12 @@ export function PricingTable({ config, dark = false }: { config: PricingConfig; 
               <div className="font-display text-lg font-semibold">{plan.name}</div>
               <p className={`mt-1.5 min-h-[2.5rem] text-sm ${featured || dark ? "text-white/60" : "text-slate-500"}`}>{plan.tagline}</p>
               <div className="mt-6 flex flex-wrap items-baseline gap-x-1.5">
-                <span className="font-display whitespace-nowrap text-4xl font-semibold tracking-tight xl:text-[2.15rem]">
+                <span data-price className="font-display whitespace-nowrap text-4xl font-semibold tracking-tight xl:text-[2.15rem]">
                   {formatMoney(lifetime ? p.amount : (p.perMonth ?? p.amount), config.currency)}
                 </span>
                 <span className={`text-sm ${featured || dark ? "text-white/50" : "text-slate-500"}`}>{lifetime ? "one-time" : "/month"}</span>
               </div>
-              <div className={`mt-1 h-5 text-xs ${featured || dark ? "text-white/50" : "text-slate-500"}`}>
+              <div data-billed className={`mt-1 h-5 text-xs ${featured || dark ? "text-white/50" : "text-slate-500"}`}>
                 {lifetime ? "Limited founder offer" : cycle === "yearly" ? `Billed ${formatMoney(p.amount, config.currency)} yearly` : "Billed monthly"}
               </div>
               <Link href={href} className={`btn mt-6 w-full ${featured ? "btn-primary" : dark ? "btn-light" : lifetime ? "btn-ghost" : "btn-ghost"}`}>

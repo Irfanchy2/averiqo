@@ -24,7 +24,7 @@ export function FitWidth({ width, children }: { width: number; children: React.R
   }, [width]);
 
   return (
-    <div ref={outer} style={{ height }} className="overflow-hidden">
+    <div ref={outer} data-fit={width} style={{ height }} className="overflow-hidden">
       <div ref={inner} style={scale < 1 ? { width, transform: `scale(${scale})`, transformOrigin: "top left" } : undefined}>
         {children}
       </div>

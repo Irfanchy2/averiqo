@@ -194,7 +194,7 @@ export default async function Home() {
           return (
             <section key={m.id} id={m.id} className={`scroll-mt-16 py-20 lg:py-28 ${i % 2 ? "bg-mist/60" : "bg-white"}`}>
               <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-12 lg:gap-16 lg:px-8">
-                <Reveal className={`lg:col-span-5 ${flip ? "lg:order-2" : ""}`}>
+                <Reveal className={`min-w-0 lg:col-span-5 ${flip ? "lg:order-2" : ""}`}>
                   <div className="flex items-center gap-3">
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-navy-900 text-white"><I className="h-5 w-5" /></span>
                     <Eyebrow>{m.eyebrow}</Eyebrow>
@@ -207,7 +207,7 @@ export default async function Home() {
                     ))}
                   </ul>
                 </Reveal>
-                <Reveal delay={120} className={`lg:col-span-7 ${flip ? "lg:order-1" : ""}`}>
+                <Reveal delay={120} className={`min-w-0 lg:col-span-7 ${flip ? "lg:order-1" : ""}`}>
                   <BrowserFrame slot={m.slot} alt={`Averiqo ${m.eyebrow}`} />
                 </Reveal>
               </div>
