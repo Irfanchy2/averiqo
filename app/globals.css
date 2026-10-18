@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-950: #060b18;
+  --color-navy-900: #0a1226;
+  --color-navy-850: #0e1830;
+  --color-navy-800: #13203d;
+  --color-navy-700: #1c2c50;
+  --color-navy-600: #2a3d68;
+  --color-ink: #0b1220;
+  --color-paper: #ffffff;
+  --color-mist: #f5f7fb;
+  --color-line: #e5e9f2;
+  --color-accent: #3d7bff;
+  --color-accent-600: #2a63e6;
+  --color-signal: #22c9a0;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+/* Scroll reveal: elements start slightly lowered and fade in once visible. */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Faint grid used on dark sections instead of gradients. */
+.grid-lines {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.625rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--color-accent); color: #fff; }
+.btn-primary:hover { background: var(--color-accent-600); }
+.btn-light { background: #fff; color: var(--color-ink); }
+.btn-light:hover { background: #e9eefb; }
+.btn-ghost-dark { border: 1px solid rgb(255 255 255 / 0.18); color: #fff; }
+.btn-ghost-dark:hover { border-color: rgb(255 255 255 / 0.4); background: rgb(255 255 255 / 0.04); }
+.btn-ghost { border: 1px solid var(--color-line); color: var(--color-ink); background: #fff; }
+.btn-ghost:hover { border-color: #c9d1e3; }
+
+.input {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  border-radius: 0.625rem;
+  padding: 0.7rem 0.875rem;
+  font-size: 0.9375rem;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgb(61 123 255 / 0.15);
+}
+.label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.375rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

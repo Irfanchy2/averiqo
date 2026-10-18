@@ -1,0 +1,71 @@
+{
+  "currency": "AED",
+  "yearlyMonthsCharged": 10,
+  "trialDays": 14,
+  "plans": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "tagline": "For founders and small teams getting organised.",
+      "monthly": 79,
+      "billing": "subscription",
+      "highlighted": false,
+      "cta": "Start Free Trial",
+      "features": [
+        "CRM, leads & contacts",
+        "Quotations, invoices & payments",
+        "Documents with OCR",
+        "Mobile app access",
+        "Email support"
+      ]
+    },
+    {
+      "id": "business",
+      "name": "Business",
+      "tagline": "For growing teams running daily operations.",
+      "monthly": 179,
+      "billing": "subscription",
+      "highlighted": true,
+      "cta": "Start Free Trial",
+      "features": [
+        "Everything in Starter",
+        "Projects & work orders",
+        "Employees & HR records",
+        "Vehicles & assets",
+        "Reports & analytics",
+        "WhatsApp integration"
+      ]
+    },
+    {
+      "id": "pro",
+      "name": "Pro",
+      "tagline": "For multi-entity businesses that want automation.",
+      "monthly": 349,
+      "billing": "subscription",
+      "highlighted": false,
+      "cta": "Start Free Trial",
+      "features": [
+        "Everything in Business",
+        "AI automation",
+        "Multi-company workspace",
+        "Advanced roles & permissions",
+        "Priority support"
+      ]
+    },
+    {
+      "id": "founder",
+      "name": "Founder Lifetime",
+      "tagline": "Pay once. Early-supporter access to Averiqo.",
+      "oneTime": 2499,
+      "billing": "lifetime",
+      "highlighted": false,
+      "cta": "Claim Lifetime Access",
+      "features": [
+        "Pro features, one-time payment",
+        "No monthly fees",
+        "Founder community access",
+        "Shape the roadmap"
+      ]
+    }
+  ]
+}
