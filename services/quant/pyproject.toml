@@ -1,0 +1,17 @@
+[project]
+name = "tradepilot-quant"
+version = "0.1.0"
+description = "TradePilot AI quantitative services: market structure, decision engine, risk, paper trading, backtesting."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501", "E701", "E702", "E731"]

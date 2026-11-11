@@ -1,0 +1,49 @@
+# Local full stack: PostgreSQL + Redis + quant service + web terminal.
+#   docker compose up --build    → http://localhost:3000
+# Paper trading only. Live trading stays disabled (TP_LIVE_TRADING_ENABLED=false).
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tradepilot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tradepilot-dev-only}
+      POSTGRES_DB: tradepilot
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tradepilot"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+  quant:
+    build: ./services/quant
+    environment:
+      TP_ENV: production
+      TP_DATABASE_URL: postgresql+psycopg://tradepilot:${POSTGRES_PASSWORD:-tradepilot-dev-only}@postgres:5432/tradepilot
+      TP_REDIS_URL: redis://redis:6379/0
+      TP_MARKET_DATA_PROVIDER: ${TP_MARKET_DATA_PROVIDER:-simulated}
+      TP_API_TOKEN: ${TP_API_TOKEN:-}
+      TP_CORS_ORIGINS: http://localhost:3000
+      TP_CREDENTIALS_ENCRYPTION_KEY: ${TP_CREDENTIALS_ENCRYPTION_KEY:-}
+      TP_LIVE_TRADING_ENABLED: "false"
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  web:
+    build:
+      context: ./apps/web
+      args:
+        NEXT_PUBLIC_QUANT_WS_URL: ws://localhost:8000/ws
+    environment:
+      QUANT_API_URL: http://quant:8000
+      QUANT_API_TOKEN: ${TP_API_TOKEN:-}
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on: [quant]
+
+volumes:
+  pgdata:
