@@ -1,0 +1,4 @@
+# PostgreSQL driver: only needed when TP_DATABASE_URL points at PostgreSQL (Docker / production).
+# Local development uses SQLite and does not need this.
+-r requirements.txt
+psycopg[binary]>=3.2

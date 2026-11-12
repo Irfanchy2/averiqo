@@ -86,7 +86,14 @@ function setup() {
   const ok = spawnSync(venvPy, ["-c", "import fastapi, numpy, sqlalchemy, uvicorn, cryptography"], { cwd: QUANT });
   if (ok.status !== 0) {
     run(venvPy, ["-m", "pip", "install", "--upgrade", "pip"], QUANT, "upgrade pip");
-    run(venvPy, ["-m", "pip", "install", "-r", "requirements-dev.txt"], QUANT, "install Python packages");
+    const v = spawnSync(venvPy, ["-c", "import sys,platform;print(sys.version.split()[0], platform.machine(), platform.mac_ver()[0])"], { encoding: "utf8" });
+    info(`virtualenv Python: ${v.stdout.trim()}`);
+    const r = spawnSync(venvPy, ["-m", "pip", "install", "-r", "requirements-dev.txt"], { cwd: QUANT, stdio: "inherit", shell: WIN });
+    if (r.status !== 0) {
+      fail("Installing Python packages failed. Most often the Python version is too new for prebuilt packages.\n" +
+           "  Fix: install Python 3.12, then delete services/quant/.venv and run `npm run dev` again\n" +
+           "  (or force it: TP_PYTHON=/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 npm run dev).");
+    }
   }
   if (!existsSync(path.join(WEB, "node_modules", "next"))) run("npm", ["install"], WEB, "install web packages");
   // optional: defaults work without it
