@@ -117,3 +117,23 @@ def test_websocket_stream(client):
         ws.send_json({"subscribe": {"symbol": "BTCUSDT", "tf": "1m"}})
         msg = ws.receive_json()
         assert msg["type"] == "bar" and msg["symbol"] == "BTCUSDT"
+
+
+def test_signal_insert_race_is_harmless(client):
+    """A duplicate signal for the same bar (e.g. concurrent /scan and /setup) must not fail the request."""
+    from app.api.market import _store_signal
+    from app.db.models import Signal, session
+    db = session()
+    res = {"symbol": "ZZTEST", "timeframe": "1h", "status": "neutral", "direction": None, "quality": 0, "bar_time": 1}
+    db.add(Signal(symbol="ZZTEST", timeframe="1h", status="neutral", direction=None, quality=0, bar_time=1, payload=res))
+    db.commit()
+    # simulate the race: the existence check misses because another transaction inserted after it ran
+    import app.api.market as m
+    orig = m.select
+    m.select = lambda *a, **k: orig(Signal).where(Signal.id == -1)
+    try:
+        _store_signal(db, res)
+        db.commit()
+    finally:
+        m.select = orig
+        db.close()

@@ -23,7 +23,7 @@ function ChartCell({ symbol, tf, setup, main }: { symbol: string; tf: string; se
   const { ws } = useWorkspace();
   const a = useApi<Analysis>(`/analysis${qs({ symbol, tf })}`);
   return (
-    <div className="relative min-h-0 overflow-hidden rounded-md border border-line">
+    <div className="glass relative min-h-0 overflow-hidden rounded-md border border-line">
       {ws.view === "3d" ? (
         <Chart3D symbol={symbol} tf={tf} analysis={a.data} setup={main ? setup : null} visible={ws.visible} colors={ws.colors}
           showPlan={ws.overlays.setup} onBarClosed={a.reload} compact={!main} />
@@ -83,13 +83,13 @@ export function Workspace() {
     [{ tf: ws.tf, main: true }, ...["15m", "1h", "4h", "1D"].filter((t) => t !== ws.tf).slice(0, 3).map((tf) => ({ tf }))];
 
   return (
-    <div className="grid grid-cols-1 gap-2 p-2 lg:h-full lg:min-h-[640px] lg:grid-cols-[200px_minmax(0,1fr)_340px]">
-      <aside className="hidden overflow-hidden rounded-lg border border-line bg-panel lg:block">
+    <div className="cockpit grid grid-cols-1 gap-2 p-2 lg:h-full lg:min-h-[640px] lg:grid-cols-[200px_minmax(0,1fr)_340px]">
+      <aside className="glass cockpit-l hidden overflow-hidden rounded-lg border border-line lg:block">
         <Watchlist symbol={ws.symbol} tf={ws.tf} onSelect={(s) => set({ symbol: s })} searchRef={searchRef} />
       </aside>
 
       <section className="flex min-h-0 min-w-0 flex-col gap-2">
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-panel px-2 py-1.5">
+        <div className="glass flex flex-wrap items-center gap-2 rounded-lg border border-line px-2 py-1.5">
           <select value={ws.symbol} onChange={(e) => set({ symbol: e.target.value })} className="h-7 rounded border border-line bg-bg px-1.5 text-xs font-semibold lg:hidden">
             {symbols.map((s) => <option key={s}>{s}</option>)}
           </select>
@@ -130,12 +130,12 @@ export function Workspace() {
           {cells.map((c) => <ChartCell key={`${ws.symbol}-${c.tf}-${c.main}`} symbol={ws.symbol} tf={c.tf} setup={setupQ.data} main={c.main} />)}
         </div>
 
-        <div className="h-44 shrink-0 overflow-hidden rounded-lg border border-line bg-panel">
+        <div className="glass h-44 shrink-0 overflow-hidden rounded-lg border border-line">
           <PositionsPanel refreshKey={refresh} />
         </div>
       </section>
 
-      <aside className="flex h-[80vh] flex-col overflow-hidden rounded-lg border border-line bg-panel lg:h-auto lg:min-h-[520px]">
+      <aside className="glass cockpit-r flex h-[80vh] flex-col overflow-hidden rounded-lg border border-line lg:h-auto lg:min-h-[520px]">
         <div className="border-b border-line p-1.5">
           <Tabs value={panel} onChange={setPanel} className="w-full" items={[
             { value: "setup", label: "Setup" }, { value: "drawings", label: "Drawings" }, { value: "ai", label: "AI Assistant" }, { value: "ticket", label: "Order" }]} />

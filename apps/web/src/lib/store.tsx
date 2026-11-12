@@ -48,6 +48,7 @@ export interface Workspace {
   tf: Timeframe;
   layout: 1 | 2 | 4;
   view: "2d" | "3d";
+  depth: "off" | "subtle" | "full";
   language: "en" | "bn";
   visible: string[];
   colors: Record<string, string>;
@@ -59,6 +60,7 @@ const DEFAULT: Workspace = {
   tf: "1h",
   layout: 1,
   view: "2d",
+  depth: "full",
   language: "en",
   visible: DEFAULT_VISIBLE,
   colors: DEFAULT_COLORS,

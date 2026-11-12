@@ -5,6 +5,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import analysis_service, get_db
@@ -142,8 +143,14 @@ def _store_signal(db: Session, res: dict) -> None:
     exists = db.execute(select(Signal).where(Signal.symbol == res["symbol"], Signal.timeframe == res["timeframe"],
                                              Signal.bar_time == res["bar_time"])).scalar_one_or_none()
     if exists is None:
-        db.add(Signal(symbol=res["symbol"], timeframe=res["timeframe"], status=res["status"], direction=res["direction"],
-                      quality=res["quality"], bar_time=res["bar_time"], payload=res))
+        # concurrent /scan and /setup requests may race to insert the same bar's signal:
+        # a savepoint lets the loser roll back just this insert instead of failing the request
+        try:
+            with db.begin_nested():
+                db.add(Signal(symbol=res["symbol"], timeframe=res["timeframe"], status=res["status"], direction=res["direction"],
+                              quality=res["quality"], bar_time=res["bar_time"], payload=res))
+        except IntegrityError:
+            pass
 
 
 @router.get("/signals")

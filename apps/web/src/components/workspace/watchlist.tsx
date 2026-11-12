@@ -66,7 +66,7 @@ export function Watchlist({ symbol, tf, onSelect, searchRef }: { symbol: string;
           const s = scan[i.symbol];
           return (
             <button key={i.symbol} onClick={() => onSelect(i.symbol)}
-              className={cn("flex w-full items-center justify-between border-l-2 border-transparent px-3 py-2 text-left hover:bg-panel-2",
+              className={cn("lift3d flex w-full items-center justify-between rounded-sm border-l-2 border-transparent px-3 py-2 text-left hover:bg-panel-2",
                 i.symbol === symbol && "border-accent bg-panel-2")}>
               <div className="min-w-0">
                 <div className="text-xs font-semibold">{i.symbol}</div>

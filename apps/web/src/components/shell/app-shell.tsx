@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useApi } from "@/lib/hooks";
-import { WorkspaceProvider } from "@/lib/store";
+import { WorkspaceProvider, useWorkspace } from "@/lib/store";
+import { Backdrop3D } from "../three/backdrop-3d";
 import type { Account } from "@/lib/types";
 import { cn, fmtMoney, fmtTime, pnlClass } from "@/lib/utils";
 import { Badge, Button } from "../ui/primitives";
@@ -23,6 +24,15 @@ const NAV = [
 interface Note { id: number; title: string; body?: string; level: string; at: number }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <WorkspaceProvider>
+      <Shell>{children}</Shell>
+    </WorkspaceProvider>
+  );
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
+  const { ws } = useWorkspace();
   const path = usePathname();
   const router = useRouter();
   const { data: acct, reload } = useApi<Account>("/paper/account", 3000);
@@ -62,11 +72,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <WorkspaceProvider>
-      <div className="flex h-dvh flex-col overflow-hidden">
-        <header className="flex h-11 shrink-0 items-center gap-3 border-b border-line bg-panel px-3">
+    <>
+      <div data-depth={ws.depth} className="flex h-dvh flex-col overflow-hidden">
+        {ws.depth !== "off" && <Backdrop3D intensity={ws.depth === "full" ? 1 : 0.55} />}
+        <header className="glass relative z-30 flex h-11 shrink-0 items-center gap-3 border-b border-line px-3">
           <Link href="/" className="flex items-center gap-2">
-            <div className="grid h-6 w-6 place-items-center rounded bg-gradient-to-br from-sky-400 to-indigo-500 text-[11px] font-black text-black">TP</div>
+            <div className="[perspective:200px]"><div className="logo-cube" aria-hidden><span>TP</span><span>AI</span><span>TP</span><span>AI</span></div></div>
             <span className="hidden text-sm font-semibold tracking-tight sm:inline">TradePilot <span className="text-accent">AI</span></span>
           </Link>
           <div className="flex items-center gap-1.5">
@@ -97,7 +108,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {notes.length > 0 && <span className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-accent" />}
               </Button>
               {open && (
-                <div className="absolute right-0 top-9 z-50 max-h-96 w-80 overflow-auto rounded-lg border border-line bg-panel shadow-2xl">
+                <div className="glass no-rise absolute right-0 top-9 z-50 max-h-96 w-80 overflow-auto rounded-lg border border-line shadow-2xl">
                   <div className="flex items-center justify-between border-b border-line px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
                     Notifications
                     <button className="normal-case hover:text-fg" onClick={() => setNotes([])}>Clear</button>
@@ -117,10 +128,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <div className="flex min-h-0 flex-1">
-          <nav className="hidden w-12 shrink-0 flex-col items-center gap-1 border-r border-line bg-panel py-2 sm:flex">
+          <nav className="glass hidden w-12 shrink-0 flex-col items-center gap-1 border-r border-line py-2 sm:flex">
             {NAV.map((n, i) => (
               <Link key={n.href} href={n.href} title={`${n.label} (Alt+${i + 1})`}
-                className={cn("grid h-9 w-9 place-items-center rounded-md text-muted transition-colors hover:bg-panel-2 hover:text-fg",
+                className={cn("lift3d grid h-9 w-9 place-items-center rounded-md text-muted transition-colors hover:bg-panel-2 hover:text-fg",
                   (n.href === "/" ? path === "/" : path.startsWith(n.href)) && "bg-panel-2 text-accent")}>
                 <n.icon className="h-4 w-4" />
               </Link>
@@ -128,7 +139,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
           <main className="min-w-0 flex-1 overflow-auto pb-14 sm:pb-0">{children}</main>
         </div>
-        <nav className="fixed inset-x-0 bottom-0 z-40 flex h-12 items-center justify-around border-t border-line bg-panel sm:hidden">
+        <nav className="glass no-rise fixed inset-x-0 bottom-0 z-40 flex h-12 items-center justify-around border-t border-line sm:hidden">
           {NAV.slice(0, 5).map((n) => (
             <Link key={n.href} href={n.href} className={cn("grid place-items-center text-muted", (n.href === "/" ? path === "/" : path.startsWith(n.href)) && "text-accent")}>
               <n.icon className="h-5 w-5" />
@@ -137,7 +148,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         {help && <ShortcutHelp onClose={() => setHelp(false)} />}
       </div>
-    </WorkspaceProvider>
+    </>
   );
 }
 
@@ -149,7 +160,7 @@ function ShortcutHelp({ onClose }: { onClose: () => void }) {
   ];
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60" onClick={onClose}>
-      <div className="w-96 rounded-lg border border-line bg-panel p-4" onClick={(e) => e.stopPropagation()}>
+      <div className="glass no-rise w-96 rounded-lg border border-line p-4" onClick={(e) => e.stopPropagation()}>
         <h2 className="mb-3 text-sm font-semibold">Keyboard shortcuts</h2>
         <table className="w-full text-xs">
           <tbody>{rows.map(([k, v]) => (

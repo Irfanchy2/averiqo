@@ -59,6 +59,14 @@ export default function SettingsPage() {
         </div>
       </Card>
       <Card>
+        <CardHeader title="Interface depth (3D)" />
+        <div className="space-y-2 p-3 text-xs">
+          <div className="flex gap-2">{([["off", "Off — flat"], ["subtle", "Subtle"], ["full", "Full 3D"]] as const).map(([k, l]) => (
+            <Button key={k} variant={ws.depth === k ? "default" : "outline"} onClick={() => set({ depth: k })}>{l}</Button>))}</div>
+          <p className="text-muted">Full 3D adds the animated market backdrop, glass panels with depth, tilting tiles, physical buttons and an angled cockpit layout on wide screens. Subtle keeps depth but dims the backdrop and stays flat. Charts are never tilted, so price reading stays exact. Your OS &ldquo;reduce motion&rdquo; setting is respected.</p>
+        </div>
+      </Card>
+      <Card>
         <CardHeader title="Language & interface" />
         <div className="space-y-3 p-3 text-xs">
           <div className="flex gap-2">{(["en", "bn"] as const).map((l) => (

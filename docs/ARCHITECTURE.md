@@ -95,6 +95,18 @@ Provider.candles(symbol, tf) ──► closed_candles() ──► AnalysisServic
   asks the user to switch back to 2D.
 * For exact price reading the 2D view stays the reference. 3D is for spatial context.
 
+## 3D interface
+
+* `data-depth="off|subtle|full"` on the app root (Settings, persisted locally) drives a CSS depth system in
+  `globals.css`: `.glass` (translucent blurred surfaces, bevel highlights, stacked shadows, `rise3d` entry),
+  `.tile3d` (pointer tilt + glare via the `<Tilt>` component, no React re-renders), `.press3d` (buttons),
+  `.lift3d` (nav and watchlist hover), and `.cockpit-l/.cockpit-r` (full mode, ≥1280px). Cockpit uses the individual `rotate`
+  property so it composes with the entry animation.
+* `components/three/backdrop-3d.tsx` is a fixed three.js scene behind everything. It is capped at 30 fps, paused
+  while the tab is hidden, rendered once under reduced motion, and not mounted when depth is off. The background
+  colour lives only on `<html>`: a `<body>` background would paint over the negative z-index backdrop.
+* Chart canvases are never transformed, so crosshair and hover hit-testing stay pixel-exact.
+
 ## Scaling notes
 
 The paper loop and WebSocket hub run in-process, so the service runs with **one worker**. To scale out:

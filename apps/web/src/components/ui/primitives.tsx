@@ -2,18 +2,19 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Tilt } from "../three/tilt";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-40",
   {
     variants: {
       variant: {
-        default: "bg-accent text-black hover:bg-accent/90",
-        outline: "border border-line bg-transparent hover:bg-panel-2 text-fg",
+        default: "bg-accent text-black hover:bg-accent/90 press3d",
+        outline: "border border-line bg-transparent hover:bg-panel-2 text-fg press3d",
         ghost: "hover:bg-panel-2 text-muted hover:text-fg",
-        bull: "bg-bull/90 text-black hover:bg-bull",
-        bear: "bg-bear/90 text-white hover:bg-bear",
-        danger: "bg-bear/15 text-bear border border-bear/40 hover:bg-bear/25",
+        bull: "bg-bull/90 text-black hover:bg-bull press3d",
+        bear: "bg-bear/90 text-white hover:bg-bear press3d",
+        danger: "bg-bear/15 text-bear border border-bear/40 hover:bg-bear/25 press3d",
       },
       size: { sm: "h-7 px-2.5", md: "h-8 px-3", lg: "h-10 px-4 text-sm", icon: "h-7 w-7" },
     },
@@ -26,7 +27,7 @@ export function Button({ className, variant, size, ...props }: React.ButtonHTMLA
 }
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rounded-lg border border-line bg-panel", className)} {...props} />;
+  return <div className={cn("glass rounded-lg border border-line", className)} {...props} />;
 }
 
 export function CardHeader({ title, right, className }: { title: React.ReactNode; right?: React.ReactNode; className?: string }) {
@@ -99,10 +100,10 @@ export function Tabs<T extends string>({ value, onChange, items, className }: { 
 
 export function Stat({ label, value, className }: { label: string; value: React.ReactNode; className?: string }) {
   return (
-    <div className="min-w-0">
+    <Tilt className="min-w-0">
       <div className="text-[10px] uppercase tracking-wider text-muted">{label}</div>
       <div className={cn("truncate text-sm font-semibold tabular-nums", className)}>{value}</div>
-    </div>
+    </Tilt>
   );
 }
 

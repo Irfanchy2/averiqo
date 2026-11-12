@@ -15,10 +15,133 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-html, body { background: var(--color-bg); color: var(--color-fg); }
+/* background only on html: a body background would paint over the fixed 3D backdrop (z-index -10) */
+html { background: var(--color-bg); color: var(--color-fg); }
+body { background: transparent; color: var(--color-fg); }
 body { font-family: var(--font-sans); font-feature-settings: "cv11", "ss01"; }
 .tabular-nums { font-variant-numeric: tabular-nums; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #1f2633; border-radius: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 * { scrollbar-color: #1f2633 transparent; scrollbar-width: thin; }
+
+/* ───────────────────────── 3D interface system ─────────────────────────
+   Controlled by <div data-depth="off|subtle|full"> on the app root (Settings → Interface depth).
+   - .glass   : translucent, blurred surface with bevel lighting and stacked shadows
+   - .tile3d  : pointer-reactive tilt (vars --rx/--ry/--gx/--gy set by <Tilt>)
+   - .press3d : physical button that sinks when pressed
+   - .cockpit-l/.cockpit-r : side panels angled toward the viewer (full, ≥1280px)
+   Charts are never transformed so price/time hit-testing stays exact. */
+
+.glass {
+  background: var(--color-panel);
+  border-color: var(--color-line);
+}
+[data-depth="subtle"] .glass,
+[data-depth="full"] .glass {
+  background:
+    linear-gradient(180deg, rgba(56, 189, 248, 0.035), transparent 40%),
+    linear-gradient(180deg, rgba(22, 27, 36, 0.82), rgba(10, 13, 19, 0.78));
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  border-color: rgba(148, 163, 184, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),   /* top bevel highlight */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45),        /* bottom bevel */
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 8px 18px -6px rgba(0, 0, 0, 0.55),
+    0 28px 48px -24px rgba(2, 6, 23, 0.9);     /* long ambient drop */
+  animation: rise3d 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+[data-depth="full"] .glass {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(56, 189, 248, 0.04),
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 14px 28px -8px rgba(0, 0, 0, 0.6),
+    0 40px 70px -30px rgba(14, 165, 233, 0.18);  /* faint cyan underglow */
+}
+/* overlays/menus should pop instantly, not rise */
+.glass.no-rise { animation: none; }
+
+@keyframes rise3d {
+  from { opacity: 0; transform: perspective(1400px) translateY(16px) rotateX(9deg) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+/* cockpit: side columns turned toward the centre (individual `rotate` composes with animations) */
+@media (min-width: 1280px) {
+  [data-depth="full"] .cockpit { perspective: 2200px; perspective-origin: 50% 40%; }
+  [data-depth="full"] .cockpit-l { rotate: y 5deg; transform-origin: right center; transform-style: preserve-3d; }
+  [data-depth="full"] .cockpit-r { rotate: y -5deg; transform-origin: left center; transform-style: preserve-3d; }
+}
+
+/* pointer tilt with specular glare */
+.tile3d { position: relative; transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s; }
+[data-depth="subtle"] .tile3d,
+[data-depth="full"] .tile3d {
+  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0);
+  border-radius: 0.5rem;
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.55), rgba(15, 23, 42, 0.35));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 6px 14px -6px rgba(0, 0, 0, 0.6);
+  padding: 0.5rem 0.65rem;
+}
+[data-depth="subtle"] .tile3d:hover,
+[data-depth="full"] .tile3d:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 16px 28px -10px rgba(0, 0, 0, 0.75); }
+[data-depth="subtle"] .tile3d::after,
+[data-depth="full"] .tile3d::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.09), transparent 55%);
+  opacity: var(--glare, 0); transition: opacity 0.25s;
+}
+
+/* physical buttons */
+[data-depth="subtle"] .press3d,
+[data-depth="full"] .press3d {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 3px 0 0 rgba(0, 0, 0, 0.5), 0 6px 12px -4px rgba(0, 0, 0, 0.6);
+  transform: translateY(0);
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.15s;
+}
+[data-depth="subtle"] .press3d:active,
+[data-depth="full"] .press3d:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 1px 0 0 rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.6);
+}
+
+/* nav icons lift off the rail */
+[data-depth="subtle"] .lift3d,
+[data-depth="full"] .lift3d { transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s; }
+[data-depth="subtle"] .lift3d:hover,
+[data-depth="full"] .lift3d:hover {
+  transform: perspective(300px) translateZ(14px) translateY(-1px);
+  box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* spinning logo cube */
+.logo-cube { width: 24px; height: 24px; position: relative; transform-style: preserve-3d; }
+.logo-cube > span {
+  position: absolute; inset: 0; display: grid; place-items: center; border-radius: 4px;
+  font-size: 11px; font-weight: 900; color: #000; backface-visibility: hidden;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.logo-cube > span:nth-child(1) { transform: translateZ(12px); }
+.logo-cube > span:nth-child(2) { transform: rotateY(90deg) translateZ(12px); background: linear-gradient(135deg, #22c55e, #0ea5e9); }
+.logo-cube > span:nth-child(3) { transform: rotateY(180deg) translateZ(12px); background: linear-gradient(135deg, #6366f1, #a855f7); }
+.logo-cube > span:nth-child(4) { transform: rotateY(-90deg) translateZ(12px); background: linear-gradient(135deg, #ef4444, #f59e0b); }
+[data-depth="subtle"] .logo-cube,
+[data-depth="full"] .logo-cube { animation: cube-spin 12s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+@keyframes cube-spin {
+  0%, 20% { transform: rotateX(-14deg) rotateY(0deg); }
+  25%, 45% { transform: rotateX(-14deg) rotateY(-90deg); }
+  50%, 70% { transform: rotateX(-14deg) rotateY(-180deg); }
+  75%, 95% { transform: rotateX(-14deg) rotateY(-270deg); }
+  100% { transform: rotateX(-14deg) rotateY(-360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass, .logo-cube { animation: none !important; }
+  .tile3d { transform: none !important; }
+  .lift3d:hover { transform: none !important; }
+}
