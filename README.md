@@ -16,26 +16,45 @@ look-ahead-free backtester with walk-forward validation.
 | `infra/db/schema.sql` | PostgreSQL DDL |
 | `docs/` | Architecture, API, algorithms, risk, licensing, brokers, deployment, roadmap |
 
-## Quick start (local, no Docker)
+## Quick start (on your computer)
+
+You need **Node.js ≥ 20.9** (https://nodejs.org) and **Python ≥ 3.11** (https://www.python.org; on Windows tick
+"Add python.exe to PATH"). Then, from the repository folder (works on Windows, macOS and Linux):
 
 ```bash
-# 1) quant service (Python ≥3.11)
+npm run dev
+```
+
+The first run creates the Python virtualenv and installs all packages (a few minutes). After that, open
+**http://localhost:3000** and keep the terminal open. Press Ctrl+C to stop. The API runs on http://127.0.0.1:8000
+(interactive docs at `/docs`).
+
+| Problem | Fix |
+|---|---|
+| `npm ERR! missing script: dev` | Run it from the repo root (the folder containing `package.json`, `apps/`, `services/`) |
+| "Python ≥ 3.11 not found" | Install Python and reopen the terminal. On Windows, check `py -3 --version` works |
+| "Port 3000/8000 already in use" | Close the other program or an older TradePilot terminal, then retry |
+| Page loads but shows "Quant service unreachable" | The backend crashed; scroll up in the terminal for the `[quant]` error |
+| Live dot is red | The WebSocket is blocked; the app falls back to HTTP polling automatically within a few seconds |
+
+Other commands: `npm run setup` (install only) · `npm run test` (backend tests) · `docker compose up --build`
+(full stack with PostgreSQL + Redis).
+
+<details><summary>Manual start (two terminals)</summary>
+
+```bash
 cd services/quant
-python -m venv .venv && . .venv/bin/activate
-pip install -r requirements-dev.txt
-pytest -q                                   # 66 tests
-uvicorn app.main:app --host 127.0.0.1 --port 8000
+python -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt          # Windows: .venv\Scripts\pip install -r requirements-dev.txt
+.venv/bin/uvicorn app.main:app --port 8000             # Windows: .venv\Scripts\uvicorn app.main:app --port 8000
 ```
 
 ```bash
-# 2) web terminal (Node ≥20), in a second shell
 cd apps/web
-cp .env.example .env.local
 npm install
-npm run dev                                 # http://localhost:3000
+npm run dev
 ```
-
-Or start the whole stack (PostgreSQL + Redis + both services) with `docker compose up --build`.
+</details>
 
 ## What works in this release (Phase 1 MVP)
 

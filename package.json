@@ -1,0 +1,11 @@
+{
+  "name": "tradepilot-ai",
+  "private": true,
+  "description": "Run `npm run dev` from this folder to start the quant service (:8000) and the web terminal (:3000).",
+  "scripts": {
+    "setup": "node scripts/dev.mjs --setup-only",
+    "dev": "node scripts/dev.mjs",
+    "test": "node scripts/dev.mjs --test"
+  },
+  "engines": { "node": ">=20.9" }
+}
