@@ -35,20 +35,45 @@ if (maj < 20 || (maj === 20 && min < 9)) fail(`Node ${process.versions.node} fou
 
 // ---- find Python ≥ 3.11
 function findPython() {
-  // macOS ships python3 3.9 via Xcode tools; also try versioned binaries from Homebrew / python.org
-  const cands = WIN
-    ? [["py", ["-3"]], ["python", []], ["python3", []]]
-    : [["python3.13", []], ["python3.12", []], ["python3.11", []], ["python3", []], ["python", []]];
+  // explicit override: TP_PYTHON=/path/to/python3.12 npm run dev
+  const cands = [];
+  if (process.env.TP_PYTHON) cands.push([process.env.TP_PYTHON, []]);
+  if (WIN) {
+    cands.push(["py", ["-3"]], ["python", []], ["python3", []]);
+  } else {
+    // macOS ships python3 3.9 via Xcode tools, so look for versioned binaries first, including the
+    // absolute install locations used by python.org (Frameworks) and Homebrew (Apple Silicon / Intel),
+    // which may not be on PATH yet in an already-open terminal.
+    const vers = ["3.13", "3.12", "3.11", "3.14"];
+    for (const v of vers) cands.push([`python${v}`, []]);
+    if (process.platform === "darwin") {
+      for (const v of vers) {
+        cands.push([`/Library/Frameworks/Python.framework/Versions/${v}/bin/python3`, []]);
+        cands.push([`/opt/homebrew/bin/python${v}`, []]);
+        cands.push([`/usr/local/bin/python${v}`, []]);
+      }
+      cands.push(["/opt/homebrew/bin/python3", []], ["/usr/local/bin/python3", []]);
+    }
+    cands.push(["python3", []], ["python", []]);
+  }
+  const seen = [];
   for (const [cmd, pre] of cands) {
+    if (cmd.startsWith("/") && !existsSync(cmd)) continue;
     const r = spawnSync(cmd, [...pre, "-c", "import sys;print(sys.version_info[0],sys.version_info[1])"], { encoding: "utf8", shell: WIN });
     if (r.status === 0 && r.stdout.trim()) {
       const [a, b] = r.stdout.trim().split(" ").map(Number);
-      if (a === 3 && b >= 11) return [cmd, pre];
-      info(`${cmd} is Python ${a}.${b} (need ≥ 3.11), trying next…`);
+      if (a === 3 && b >= 11) {
+        info(`Using ${cmd} (Python ${a}.${b})`);
+        return [cmd, pre];
+      }
+      seen.push(`${cmd} → ${a}.${b}`);
     }
   }
-  fail("Python ≥ 3.11 not found. macOS: `brew install python@3.12` or the installer from https://www.python.org/downloads/macos/ " +
-       "(then open a NEW terminal). Windows: https://www.python.org/downloads/ and tick “Add python.exe to PATH”.");
+  fail("Python ≥ 3.11 not found" + (seen.length ? ` (found only: ${seen.join(", ")})` : "") + ".\n" +
+       "  macOS: install Python 3.12 from https://www.python.org/downloads/macos/ (or `brew install python@3.12`),\n" +
+       "         then run `python3.12 --version` in a NEW terminal window.\n" +
+       "  Already installed somewhere else? Run: TP_PYTHON=/full/path/to/python3.12 npm run dev\n" +
+       "  Windows: https://www.python.org/downloads/ and tick “Add python.exe to PATH”.");
 }
 
 const venvPy = path.join(QUANT, ".venv", WIN ? "Scripts/python.exe" : "bin/python");
