@@ -9,7 +9,7 @@
  *   npm run test     → backend tests
  */
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, copyFileSync } from "node:fs";
+import { existsSync, copyFileSync, rmSync } from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -34,6 +34,13 @@ const [maj, min] = process.versions.node.split(".").map(Number);
 if (maj < 20 || (maj === 20 && min < 9)) fail(`Node ${process.versions.node} found; Next.js 16 needs Node ≥ 20.9. Install the LTS from https://nodejs.org`);
 
 // ---- find Python ≥ 3.11
+const MAX_MINOR = 13; // newest Python with prebuilt wheels for every dependency
+
+function pyVersion(cmd, pre = []) {
+  const r = spawnSync(cmd, [...pre, "-c", "import sys;print(sys.version_info[0],sys.version_info[1])"], { encoding: "utf8", shell: WIN });
+  return r.status === 0 && r.stdout.trim() ? r.stdout.trim().split(" ").map(Number) : null;
+}
+
 function findPython() {
   // explicit override: TP_PYTHON=/path/to/python3.12 npm run dev
   const cands = [];
@@ -44,7 +51,7 @@ function findPython() {
     // macOS ships python3 3.9 via Xcode tools, so look for versioned binaries first, including the
     // absolute install locations used by python.org (Frameworks) and Homebrew (Apple Silicon / Intel),
     // which may not be on PATH yet in an already-open terminal.
-    const vers = ["3.13", "3.12", "3.11", "3.14"];
+    const vers = ["3.12", "3.13", "3.11"];
     for (const v of vers) cands.push([`python${v}`, []]);
     if (process.platform === "darwin") {
       for (const v of vers) {
@@ -62,14 +69,18 @@ function findPython() {
     const r = spawnSync(cmd, [...pre, "-c", "import sys;print(sys.version_info[0],sys.version_info[1])"], { encoding: "utf8", shell: WIN });
     if (r.status === 0 && r.stdout.trim()) {
       const [a, b] = r.stdout.trim().split(" ").map(Number);
-      if (a === 3 && b >= 11) {
+      const explicit = cmd === process.env.TP_PYTHON;
+      if (a === 3 && b >= 11 && (b <= MAX_MINOR || explicit)) {
+        if (b > MAX_MINOR) info(c(33, `Python ${a}.${b} is newer than tested (3.11–3.${MAX_MINOR}); some packages may need compiling.`));
         info(`Using ${cmd} (Python ${a}.${b})`);
         return [cmd, pre];
       }
       seen.push(`${cmd} → ${a}.${b}`);
     }
   }
-  fail("Python ≥ 3.11 not found" + (seen.length ? ` (found only: ${seen.join(", ")})` : "") + ".\n" +
+  const tooNew = seen.some((x) => Number(x.split(".").pop()) > MAX_MINOR);
+  fail(`Python 3.11–3.${MAX_MINOR} not found` + (seen.length ? ` (found only: ${seen.join(", ")})` : "") + ".\n" +
+       (tooNew ? "  Your Python is too NEW: several packages have no prebuilt builds for it yet. Install Python 3.12 alongside it.\n" : "") +
        "  macOS: install Python 3.12 from https://www.python.org/downloads/macos/ (or `brew install python@3.12`),\n" +
        "         then run `python3.12 --version` in a NEW terminal window.\n" +
        "  Already installed somewhere else? Run: TP_PYTHON=/full/path/to/python3.12 npm run dev\n" +
@@ -79,6 +90,15 @@ function findPython() {
 const venvPy = path.join(QUANT, ".venv", WIN ? "Scripts/python.exe" : "bin/python");
 
 function setup() {
+  // rebuild a virtualenv created with an unsupported Python (e.g. 3.16) once a supported one exists
+  if (existsSync(venvPy) && !process.env.TP_PYTHON) {
+    const v = pyVersion(venvPy);
+    if (!v || v[1] < 11 || v[1] > MAX_MINOR) {
+      findPython(); // fails with guidance if no supported Python is installed
+      info(`Existing virtualenv uses Python ${v ? v.join(".") : "?"}; recreating it with a supported version…`);
+      rmSync(path.join(QUANT, ".venv"), { recursive: true, force: true });
+    }
+  }
   if (!existsSync(venvPy)) {
     const [py, pre] = findPython();
     run(py, [...pre, "-m", "venv", ".venv"], QUANT, "create Python virtualenv");
@@ -91,7 +111,8 @@ function setup() {
     const r = spawnSync(venvPy, ["-m", "pip", "install", "-r", "requirements-dev.txt"], { cwd: QUANT, stdio: "inherit", shell: WIN });
     if (r.status !== 0) {
       fail("Installing Python packages failed. Most often the Python version is too new for prebuilt packages.\n" +
-           "  Fix: install Python 3.12, then delete services/quant/.venv and run `npm run dev` again\n" +
+           "  Fix: install Python 3.12 (https://www.python.org/downloads/macos/), then run `npm run dev` again —\n" +
+           "  the old environment is rebuilt automatically\n" +
            "  (or force it: TP_PYTHON=/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 npm run dev).");
     }
   }
