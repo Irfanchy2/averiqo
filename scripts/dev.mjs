@@ -35,16 +35,20 @@ if (maj < 20 || (maj === 20 && min < 9)) fail(`Node ${process.versions.node} fou
 
 // ---- find Python ≥ 3.11
 function findPython() {
-  const cands = WIN ? [["py", ["-3"]], ["python", []], ["python3", []]] : [["python3", []], ["python", []]];
+  // macOS ships python3 3.9 via Xcode tools; also try versioned binaries from Homebrew / python.org
+  const cands = WIN
+    ? [["py", ["-3"]], ["python", []], ["python3", []]]
+    : [["python3.13", []], ["python3.12", []], ["python3.11", []], ["python3", []], ["python", []]];
   for (const [cmd, pre] of cands) {
     const r = spawnSync(cmd, [...pre, "-c", "import sys;print(sys.version_info[0],sys.version_info[1])"], { encoding: "utf8", shell: WIN });
-    if (r.status === 0) {
+    if (r.status === 0 && r.stdout.trim()) {
       const [a, b] = r.stdout.trim().split(" ").map(Number);
       if (a === 3 && b >= 11) return [cmd, pre];
       info(`${cmd} is Python ${a}.${b} (need ≥ 3.11), trying next…`);
     }
   }
-  fail("Python ≥ 3.11 not found. Install it from https://www.python.org/downloads/ (Windows: tick “Add python.exe to PATH”).");
+  fail("Python ≥ 3.11 not found. macOS: `brew install python@3.12` or the installer from https://www.python.org/downloads/macos/ " +
+       "(then open a NEW terminal). Windows: https://www.python.org/downloads/ and tick “Add python.exe to PATH”.");
 }
 
 const venvPy = path.join(QUANT, ".venv", WIN ? "Scripts/python.exe" : "bin/python");
