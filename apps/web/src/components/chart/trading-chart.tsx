@@ -18,7 +18,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api, qs } from "@/lib/api";
 import { useMarketStream } from "@/lib/hooks";
 import type { Analysis, Candle, Drawing, Setup } from "@/lib/types";
-import { cn, fmtPrice, fmtTime } from "@/lib/utils";
+import { cn, fmtPrice } from "@/lib/utils";
+import { DrawingTooltip } from "./drawing-tooltip";
 import { DrawingsPrimitive, drawingsToShapes, planToShapes, type RenderShape } from "./drawings-primitive";
 
 interface Props {
@@ -202,22 +203,7 @@ export function TradingChart({ symbol, tf, analysis, setup, visible, colors, ove
         </div>
       )}
       {err && <div className="absolute inset-0 z-20 grid place-items-center bg-panel/80 p-4 text-center text-xs text-bear">{err}</div>}
-      {tip && (
-        <div className="pointer-events-none absolute z-30 w-72 rounded-md border border-line bg-panel/95 p-2.5 text-[11px] shadow-xl backdrop-blur"
-          style={{ left: tip.x, top: tip.y }}>
-          <div className="mb-1 flex items-center justify-between">
-            <span className="font-semibold">{tip.d.label}</span>
-            <span className="rounded bg-panel-2 px-1.5 py-0.5 text-[10px] text-muted">Quality {tip.d.quality}/100</span>
-          </div>
-          <div className="mb-1 text-muted">
-            {tip.d.price !== null ? fmtPrice(tip.d.price) : tip.d.top !== null ? `${fmtPrice(tip.d.bottom)} – ${fmtPrice(tip.d.top)}` : ""}
-            {" · "}{tip.d.timeframe} · {tip.d.status}{tip.d.inferred && " · inferred"}
-          </div>
-          <div className="mb-1">{tip.d.reason}</div>
-          <div className="text-warn/90">Invalidation: {tip.d.invalidation}</div>
-          <div className="mt-1 text-[10px] text-muted">Detected {fmtTime(tip.d.detected_at)} · quality is a heuristic score, not a probability</div>
-        </div>
-      )}
+      {tip && <DrawingTooltip d={tip.d} x={tip.x} y={tip.y} />}
     </div>
   );
 }

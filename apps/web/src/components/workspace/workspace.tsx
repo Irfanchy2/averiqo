@@ -6,6 +6,7 @@ import { useApi } from "@/lib/hooks";
 import { useWorkspace } from "@/lib/store";
 import { TIMEFRAMES, type Analysis, type Setup, type Timeframe } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Chart3D } from "../chart/chart-3d";
 import { TradingChart } from "../chart/trading-chart";
 import { Tabs } from "../ui/primitives";
 import { AssistantPanel } from "./assistant-panel";
@@ -23,8 +24,13 @@ function ChartCell({ symbol, tf, setup, main }: { symbol: string; tf: string; se
   const a = useApi<Analysis>(`/analysis${qs({ symbol, tf })}`);
   return (
     <div className="relative min-h-0 overflow-hidden rounded-md border border-line">
-      <TradingChart symbol={symbol} tf={tf} analysis={a.data} setup={main ? setup : null} visible={ws.visible} colors={ws.colors}
-        overlays={ws.overlays} onBarClosed={a.reload} compact={!main} />
+      {ws.view === "3d" ? (
+        <Chart3D symbol={symbol} tf={tf} analysis={a.data} setup={main ? setup : null} visible={ws.visible} colors={ws.colors}
+          showPlan={ws.overlays.setup} onBarClosed={a.reload} compact={!main} />
+      ) : (
+        <TradingChart symbol={symbol} tf={tf} analysis={a.data} setup={main ? setup : null} visible={ws.visible} colors={ws.colors}
+          overlays={ws.overlays} onBarClosed={a.reload} compact={!main} />
+      )}
       {a.data && (
         <div className="pointer-events-none absolute bottom-7 left-2 z-10 rounded bg-panel/80 px-1.5 py-0.5 text-[10px] text-muted">
           structure <span className={a.data.trend === "bullish" ? "text-bull" : a.data.trend === "bearish" ? "text-bear" : ""}>{a.data.trend}</span>
@@ -60,7 +66,8 @@ export function Workspace() {
       else if (e.key === "[" || e.key === "]") {
         const i = symbols.indexOf(ws.symbol);
         set({ symbol: symbols[(i + (e.key === "]" ? 1 : symbols.length - 1)) % symbols.length] });
-      } else if (e.key.toLowerCase() === "l") set({ layout: ws.layout === 1 ? 2 : ws.layout === 2 ? 4 : 1 });
+      } else if (e.key.toLowerCase() === "v") set({ view: ws.view === "3d" ? "2d" : "3d" });
+      else if (e.key.toLowerCase() === "l") set({ layout: ws.layout === 1 ? 2 : ws.layout === 2 ? 4 : 1 });
       else if (e.key.toLowerCase() === "d") set({ visible: ws.visible.length ? [] : ["swing", "structure_break", "order_block", "fvg", "sr_zone", "liquidity", "liquidity_sweep", "trendline", "key_level"] });
       else if (e.key.toLowerCase() === "b") openTicket("buy");
       else if (e.key.toLowerCase() === "s") openTicket("sell");
@@ -92,6 +99,14 @@ export function Workspace() {
                 className={cn("rounded px-2 py-0.5 text-[11px] font-medium", ws.tf === t ? "bg-panel-2 text-accent" : "text-muted hover:text-fg")}>{t}</button>
             ))}
           </div>
+          <div className="flex gap-0.5 rounded-md bg-bg p-0.5" role="group" aria-label="Chart view">
+            {(["2d", "3d"] as const).map((v) => (
+              <button key={v} onClick={() => set({ view: v })} title={`${v.toUpperCase()} chart (V)`} aria-pressed={ws.view === v}
+                className={cn("rounded px-2 py-0.5 text-[11px] font-semibold", ws.view === v ? "bg-panel-2 text-accent" : "text-muted hover:text-fg")}>
+                {v.toUpperCase()}
+              </button>
+            ))}
+          </div>
           <div className="flex gap-0.5 rounded-md bg-bg p-0.5">
             {([1, 2, 4] as const).map((l) => (
               <button key={l} onClick={() => set({ layout: l })} title={`${l} chart layout (L)`}
@@ -102,7 +117,7 @@ export function Workspace() {
           </div>
           <div className="flex items-center gap-2 text-[11px] text-muted">
             {(["ema", "vwap", "setup"] as const).map((k) => (
-              <label key={k} className="flex cursor-pointer items-center gap-1">
+              <label key={k} className={cn("flex cursor-pointer items-center gap-1", ws.view === "3d" && k !== "setup" && "hidden")}>
                 <input type="checkbox" checked={ws.overlays[k]} onChange={(e) => set({ overlays: { ...ws.overlays, [k]: e.target.checked } })} className="accent-sky-400" />
                 {k === "ema" ? "EMA 21/50/200" : k === "vwap" ? "VWAP" : "Trade plan"}
               </label>

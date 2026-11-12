@@ -144,7 +144,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 function ShortcutHelp({ onClose }: { onClose: () => void }) {
   const rows = [
     ["1 – 8", "Switch timeframe (1m … 1D)"], ["[ / ]", "Previous / next symbol"], ["/", "Focus symbol search"],
-    ["L", "Cycle chart layout (1 / 2 / 4)"], ["D", "Toggle all drawings"], ["B / S", "Open buy / sell ticket"],
+    ["V", "Toggle 2D / 3D chart"], ["L", "Cycle chart layout (1 / 2 / 4)"], ["D", "Toggle all drawings"], ["B / S", "Open buy / sell ticket"],
     ["A", "Focus AI assistant"], ["Alt + 1…7", "Navigate pages"], ["?", "Toggle this help"], ["Esc", "Close dialogs"],
   ];
   return (

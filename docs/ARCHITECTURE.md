@@ -79,6 +79,22 @@ Provider.candles(symbol, tf) ──► closed_candles() ──► AnalysisServic
 * Swings, BOS/CHoCH and sweeps use the native series markers plugin.
 * Colours can be set per drawing type (Settings). Visibility can be toggled per type (Drawings panel, `D` key).
 
+## 3D market view
+
+`apps/web/src/components/chart/chart-3d.tsx` renders the same candles and drawings with three.js:
+
+* Axes: x is time (latest candle at x = 0), y is price (the visible range is mapped to 0..80), z is depth.
+* Candles, wicks and volume are three `InstancedMesh`es (one draw call each). The forming bar is updated in place
+  without rebuilding the scene. The scene is rebuilt only when a new bar arrives or price leaves the mapped range.
+* Zones (OB, FVG, supply/demand, S/R) are translucent boxes with edge outlines. Their depth encodes the type
+  (S/R deepest, FVG thinnest). Liquidity is a dashed line plus a horizontal ribbon and stays labelled "inferred".
+  Swings are emissive orbs and sweeps are cones. The trade plan is stacked planes.
+* Raycasting on zones, lines and markers drives the same `DrawingTooltip` as 2D. OrbitControls handle
+  orbit, zoom and pan, and there is a reset-camera button.
+* Render loop: one `requestAnimationFrame` per view. Everything is disposed on unmount. If WebGL is unavailable, a notice
+  asks the user to switch back to 2D.
+* For exact price reading the 2D view stays the reference. 3D is for spatial context.
+
 ## Scaling notes
 
 The paper loop and WebSocket hub run in-process, so the service runs with **one worker**. To scale out:

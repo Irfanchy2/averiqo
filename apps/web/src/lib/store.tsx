@@ -47,6 +47,7 @@ export interface Workspace {
   symbol: string;
   tf: Timeframe;
   layout: 1 | 2 | 4;
+  view: "2d" | "3d";
   language: "en" | "bn";
   visible: string[];
   colors: Record<string, string>;
@@ -57,6 +58,7 @@ const DEFAULT: Workspace = {
   symbol: "BTCUSDT",
   tf: "1h",
   layout: 1,
+  view: "2d",
   language: "en",
   visible: DEFAULT_VISIBLE,
   colors: DEFAULT_COLORS,

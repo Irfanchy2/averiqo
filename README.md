@@ -12,7 +12,7 @@ look-ahead-free backtester with walk-forward validation.
 | | |
 |---|---|
 | `services/quant` | Python 3.12 · FastAPI · NumPy · SQLAlchemy: structure detection, indicators, decision engine, risk engine, paper broker, backtester, grounded assistant, REST + WebSocket |
-| `apps/web` | Next.js 16 · TypeScript · Tailwind 4 · shadcn-style UI · TradingView Lightweight Charts 5: the trading terminal |
+| `apps/web` | Next.js 16 · TypeScript · Tailwind 4 · shadcn-style UI · TradingView Lightweight Charts 5 · three.js (3D view): the trading terminal |
 | `infra/db/schema.sql` | PostgreSQL DDL |
 | `docs/` | Architecture, API, algorithms, risk, licensing, brokers, deployment, roadmap |
 
@@ -47,6 +47,7 @@ Or start the whole stack (PostgreSQL + Redis + both services) with `docker compo
 - **Paper trading**: bid/ask, latency drift, slippage, fees and commission; market/limit/stop orders with SL/TP; idempotent `client_order_id`; auto kill switch on daily loss; hash-chained audit log.
 - **Backtesting**: next-bar fills, conservative intrabar handling, costs, in/out-of-sample split, walk-forward, regime breakdown, quality→outcome calibration, and a full trade list.
 - **Assistant**: English and Bengali (বাংলা) Q&A grounded *only* in computed analysis, the calendar and the journal.
+- **3D market view** (three.js, toggle `2D/3D` or press `V`): lit 3D candles, a volume wall, order blocks/FVGs/zones as translucent slabs, inferred liquidity ribbons, swing orbs, sweep cones and the trade plan as stacked planes. Orbit, zoom and pan, with the same hover explanations and live updates.
 - **Terminal UI**: multi-chart workspace (1/2/4), watchlist scanner, setup panel, drawing toggles and hover explanations, order ticket, positions, journal, risk dashboard, calendar, broker registry, settings, notifications, keyboard shortcuts (`?`), mobile layout.
 
 The trading modes are Analysis only, **Paper (default)**, and Live. Live is **hard-disabled** in this release: no broker adapter has been verified yet. See [docs/BROKERS.md](docs/BROKERS.md).
